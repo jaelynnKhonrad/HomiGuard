@@ -26,7 +26,8 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import android.graphics.Color;
 
@@ -37,12 +38,13 @@ public class LoginActivity extends AppCompatActivity {
     CheckBox rememberMeCheck;
     TextView signUpText;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     private SharedPreferences sharedPreferences;
     private static final String PREF_NAME = "login_pref";
     private static final String KEY_EMAIL = "email";
     private static final String KEY_REMEMBER = "remember";
-    private static final String KEY_TIME = "remember_time"; // untuk batas 30 hari (milidetik)
+    private static final String KEY_TIME = "remember_time";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,19 +58,18 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        // 🔹 Inisialisasi
+        // Inisialisasi
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
         rememberMeCheck = findViewById(R.id.rememberMeCheck);
         signUpText = findViewById(R.id.signUpText);
 
-        // 🔹 SharedPreferences
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         checkRememberedLogin();
 
-        // 🔹 Login button
         loginButton.setOnClickListener(v -> {
             String email = emailInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
@@ -78,10 +79,49 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            login(email, password);
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Ambil data user dari Firestore berdasarkan email
+                            db.collection("User_HomiGuard")
+                                    .whereEqualTo("email", email)
+                                    .get()
+                                    .addOnSuccessListener(query -> {
+                                        if (!query.isEmpty()) {
+                                            for (QueryDocumentSnapshot document : query) {
+                                                String nama = document.getString("username");
+
+                                                // 🔹 Cek apakah checkbox diaktifkan
+                                                if (rememberMeCheck.isChecked()) {
+                                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                    editor.putBoolean(KEY_REMEMBER, true);
+                                                    editor.putString(KEY_EMAIL, email);
+                                                    editor.putLong(KEY_TIME, System.currentTimeMillis());
+                                                    editor.apply();
+                                                } else {
+                                                    // 🔹 Hapus data kalau user gak mau diingat
+                                                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                                                    editor.clear();
+                                                    editor.apply();
+                                                }
+
+                                                Toast.makeText(LoginActivity.this, "Selamat datang, " + nama + "!", Toast.LENGTH_SHORT).show();
+                                                toMain();
+                                                return;
+                                            }
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "Data pengguna tidak ditemukan di Firestore.", Toast.LENGTH_SHORT).show();
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Toast.makeText(LoginActivity.this, "Gagal mengambil data Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    });
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Login gagal. Cek email & password.", Toast.LENGTH_LONG).show();
+                        }
+                    });
         });
 
-        // 🔹 “Sign Up” text (klik sebagian)
         setClickableSignupText();
     }
 
@@ -90,7 +130,6 @@ public class LoginActivity extends AppCompatActivity {
         long savedTime = sharedPreferences.getLong(KEY_TIME, 0);
         long currentTime = System.currentTimeMillis();
 
-        // kalau remember aktif dan belum lebih dari 30 hari (30 * 24 * 60 * 60 * 1000 ms)
         if (isRemembered && (currentTime - savedTime < 2592000000L)) {
             String savedEmail = sharedPreferences.getString(KEY_EMAIL, null);
             if (savedEmail != null) {
@@ -99,33 +138,6 @@ public class LoginActivity extends AppCompatActivity {
                 finish();
             }
         }
-    }
-
-    private void login(String email, String password) {
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            String userEmail = user != null ? user.getEmail() : email;
-
-                            // simpan remember jika dicentang
-                            if (rememberMeCheck.isChecked()) {
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-                                editor.putBoolean(KEY_REMEMBER, true);
-                                editor.putString(KEY_EMAIL, userEmail);
-                                editor.putLong(KEY_TIME, System.currentTimeMillis());
-                                editor.apply();
-                            }
-
-                            Toast.makeText(LoginActivity.this, "Login berhasil!", Toast.LENGTH_SHORT).show();
-                            toMain();
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Login gagal. Cek email & password.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
     }
 
     private void setClickableSignupText() {
@@ -144,7 +156,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void updateDrawState(@NonNull TextPaint ds) {
                 super.updateDrawState(ds);
-                ds.setColor(Color.parseColor("#5C6BC0")); // Warna biru
+                ds.setColor(Color.parseColor("#5C6BC0"));
                 ds.setUnderlineText(false);
                 ds.setFakeBoldText(true);
             }
