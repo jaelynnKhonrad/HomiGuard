@@ -1,30 +1,33 @@
 package edu.uph.m23si1.homiguard.ui;
 
-import android.os.Bundle;
-
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-import androidx.fragment.app.DialogFragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-
+import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.DialogFragment;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-import org.jspecify.annotations.Nullable;
-
 import edu.uph.m23si1.homiguard.LoginActivity;
+import edu.uph.m23si1.homiguard.ProfileActivity;
 import edu.uph.m23si1.homiguard.R;
 
 public class SettingFragment extends DialogFragment {
+
     Button btnLogout;
+    LinearLayout itemProfile;
     FirebaseAuth mAuth;
 
     @Nullable
@@ -35,9 +38,25 @@ public class SettingFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.fragment_setting, container, false);
 
         btnLogout = view.findViewById(R.id.btnLogout);
+        itemProfile = view.findViewById(R.id.itemProfile);
         mAuth = FirebaseAuth.getInstance();
 
+        ViewCompat.setOnApplyWindowInsetsListener(view, (v, insets) -> {
+            int bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom;
+            v.setPadding(0, 0, 0, bottomInset);
+            return insets;
+        });
+
+        // 🔹 Klik tombol Logout
         btnLogout.setOnClickListener(v -> logoutUser());
+
+        // 🔹 Klik item Profile
+        itemProfile.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), ProfileActivity.class);
+            startActivity(intent);
+            dismiss(); // tutup panel setting biar langsung ke Profile
+        });
+
         return view;
     }
 
@@ -67,8 +86,6 @@ public class SettingFragment extends DialogFragment {
         super.onStart();
 
         if (getDialog() != null && getDialog().getWindow() != null) {
-            ViewGroup.LayoutParams params = getDialog().getWindow().getAttributes();
-
             int screenWidth = getResources().getDisplayMetrics().widthPixels;
 
             // Ukuran panel 85% layar, nempel kanan

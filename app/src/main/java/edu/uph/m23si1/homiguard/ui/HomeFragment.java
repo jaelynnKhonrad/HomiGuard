@@ -51,7 +51,7 @@ public class HomeFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.ENGLISH);
         txtTanggal.setText(sdf.format(new Date()));
 
-        // 🔹 Ambil data user berdasarkan email dari Firestore
+        // 🔹 Ambil data user pertama kali
         getDataUserByEmail();
 
         // 🔹 Tombol See Detail
@@ -61,6 +61,13 @@ public class HomeFragment extends Fragment {
         SD_Water.setOnClickListener(v -> startActivity(new Intent(getActivity(), WaterActivity.class)));
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 🔄 Refresh nama setiap kali fragment aktif lagi (misalnya setelah update di ProfileActivity)
+        getDataUserByEmail();
     }
 
     private void getDataUserByEmail() {
