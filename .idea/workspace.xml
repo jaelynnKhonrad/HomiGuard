@@ -5,7 +5,62 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_bottom_sheet.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_button_outline.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_button_primary.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_date_selected.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_handle_bar.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_time_ampm.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/bg_time_input.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/card_bg.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/form_bg.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_arrow_back.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_chevron_left.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_chevron_right.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
         </config>
@@ -40,6 +95,16 @@
           <theme>@style/Theme.HomiGuard</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_schedule2.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_schedule_list.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_water.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
@@ -60,6 +125,16 @@
           <theme>@style/Theme.HomiGuard</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_rain_card.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_schedule.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
     </layouts>
   </component>
   <component name="AutoImportSettings">
@@ -67,8 +142,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b212cfda-e4af-40ea-a1ee-ae8301e4e1f1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/config.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LaundryActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LaundryActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -79,7 +160,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/veliciaslaptop/.android/avd/Medium_Phone.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -120,10 +201,13 @@
 }</component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
-    "url": "https://github.com/jaelynnKhonrad/HomiGuard.git",
-    "accountId": "a0ab08f4-ba87-435c-80eb-bcace6639bb8"
+    "url": "git@github.com:jaelynnKhonrad/HomiGuard.git",
+    "accountId": "7d1b58f8-5ba8-47aa-bdfc-7fc9ec6fc38d"
   }
 }]]></component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -132,21 +216,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/jaelynnkhonrad/AndroidStudioProjects/HomiGuard&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.app.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/veliciaslaptop/Dropbox/Mac/Desktop/HomiGuard/app/src/main/res/drawable"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/app/src/main/res/drawable" />
+      <recent name="$PROJECT_DIR$/app/src/main/res/layout" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\23SI1\PAB\project uas\HomiGuard\HomiGuard\app\src\main\res\font" />
     </key>
@@ -155,6 +243,11 @@
     </key>
     <key name="android.template.222673963">
       <recent name="edu.uph.m23si1.homiguard" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="edu.uph.m23si1.homiguard.model" />
+      <recent name="edu.uph.m23si1.homiguard" />
+      <recent name="edu.uph.m23si1.homiguard.ui" />
     </key>
   </component>
   <component name="RunManager">
@@ -258,12 +351,12 @@
       <map>
         <entry key="edu.uph.m23si1.homiguard">
           <value>
-            <CheckInfo lastCheckTimestamp="1763008318440" />
+            <CheckInfo lastCheckTimestamp="1763180585344" />
           </value>
         </entry>
         <entry key="edu.uph.m23si1.homiguard.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1763008318440" />
+            <CheckInfo lastCheckTimestamp="1763180585329" />
           </value>
         </entry>
       </map>
