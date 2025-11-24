@@ -59,7 +59,7 @@ public class RegisterActivity extends AppCompatActivity {
             String username = edtUsername.getText().toString().trim();
 
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(username)) {
-                Toast.makeText(RegisterActivity.this, "Semua field harus diisi", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegisterActivity.this, "All fields must be filled", Toast.LENGTH_SHORT).show();
             } else {
                 registerUser(email, password, username);
             }
@@ -70,7 +70,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void setupLoginText() {
-        String text = "Sudah punya akun? Login";
+        String text = "Already have an account? Login";
         SpannableString ss = new SpannableString(text);
         int start = text.indexOf("Login");
         int end = start + "Login".length();
@@ -105,7 +105,7 @@ public class RegisterActivity extends AppCompatActivity {
                             saveUserData(email, username);
                         } else {
                             Toast.makeText(RegisterActivity.this,
-                                    "Registrasi gagal: " + task.getException().getMessage(),
+                                    "Registration failed: " + task.getException().getMessage(),
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -121,11 +121,11 @@ public class RegisterActivity extends AppCompatActivity {
         firestore.collection("User_HomiGuard")
                 .add(userMap)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(RegisterActivity.this, "Registrasi berhasil!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "Registration successful!", Toast.LENGTH_SHORT).show();
                     toLogin();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(RegisterActivity.this, "Gagal menyimpan data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, "Failed to save data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

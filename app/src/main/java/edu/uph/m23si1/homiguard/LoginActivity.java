@@ -75,7 +75,7 @@ public class LoginActivity extends AppCompatActivity {
             String password = passwordInput.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Email dan Password tidak boleh kosong", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Email and Password cannot be empty", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -105,19 +105,19 @@ public class LoginActivity extends AppCompatActivity {
                                                     editor.apply();
                                                 }
 
-                                                Toast.makeText(LoginActivity.this, "Selamat datang, " + nama + "!", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(LoginActivity.this, "Welcome, " + nama + "!", Toast.LENGTH_SHORT).show();
                                                 toMain();
                                                 return;
                                             }
                                         } else {
-                                            Toast.makeText(LoginActivity.this, "Data pengguna tidak ditemukan di Firestore.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(LoginActivity.this, "User data not found in Firestore.", Toast.LENGTH_SHORT).show();
                                         }
                                     })
                                     .addOnFailureListener(e -> {
-                                        Toast.makeText(LoginActivity.this, "Gagal mengambil data Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LoginActivity.this, "Failed to retrieve Firestore data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                     });
                         } else {
-                            Toast.makeText(LoginActivity.this, "Login gagal. Cek email & password.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this, "Login failed. Check your email & password.", Toast.LENGTH_LONG).show();
                         }
                     });
         });

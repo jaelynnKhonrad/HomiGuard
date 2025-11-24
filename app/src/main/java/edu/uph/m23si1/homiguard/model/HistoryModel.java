@@ -1,19 +1,59 @@
 package edu.uph.m23si1.homiguard.model;
 
 public class HistoryModel {
-    private String status;
-    private String unlock;
-    private String lock;
 
-    public HistoryModel() {} // Firebase butuh konstruktor kosong
+    private boolean isHeader;
+    private String headerTitle;
 
-    public HistoryModel(String status, String unlock, String lock) {
-        this.status = status;
-        this.unlock = unlock;
-        this.lock = lock;
+    private String device;
+    private String value;
+    private int percent;
+    private float levelCm;
+    private long timestamp;
+
+    public HistoryModel() {}
+
+    // Constructor Header
+    public HistoryModel(String headerTitle) {
+        this.isHeader = true;
+        this.headerTitle = headerTitle;
     }
 
-    public String getStatus() { return status; }
-    public String getUnlock() { return unlock; }
-    public String getLock() { return lock; }
+    // Constructor Item
+    public HistoryModel(String device, String value, int percent, float levelCm, long timestamp) {
+        this.isHeader = false;
+        this.device = device;
+        this.value = value;
+        this.percent = percent;
+        this.levelCm = levelCm;
+        this.timestamp = timestamp;
+    }
+
+    public boolean isHeader() {
+        return isHeader;
+    }
+
+    public String getHeaderTitle() {
+        return headerTitle;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public int getPercent() {
+        return percent;
+    }
+
+    public float getLevelCm() {
+        return levelCm;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
 }

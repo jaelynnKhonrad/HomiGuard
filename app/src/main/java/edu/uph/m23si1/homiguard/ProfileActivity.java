@@ -72,7 +72,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void loadCurrentUserData() {
         if (user == null || user.getEmail() == null) {
-            Toast.makeText(this, "User belum login", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -100,7 +100,7 @@ public class ProfileActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(ProfileActivity.this, "Gagal ambil data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ProfileActivity.this, "Failed to retrieve data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                     String dn = user.getDisplayName();
                     if (!TextUtils.isEmpty(dn)) etName.setText(dn);
@@ -111,7 +111,7 @@ public class ProfileActivity extends AppCompatActivity {
         String newName = etName.getText().toString().trim();
 
         if (TextUtils.isEmpty(newName)) {
-            etName.setError("Nama tidak boleh kosong");
+            etName.setError("Name cannot be empty");
             etName.requestFocus();
             return;
         }
@@ -128,7 +128,7 @@ public class ProfileActivity extends AppCompatActivity {
                         updateNameInFirestore(newName);
                     } else {
                         btnSave.setEnabled(true);
-                        Toast.makeText(this, "Gagal update nama: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Failed to update name: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -144,7 +144,7 @@ public class ProfileActivity extends AppCompatActivity {
                     .addOnSuccessListener(unused -> finishSuccess())
                     .addOnFailureListener(e -> {
                         btnSave.setEnabled(true);
-                        Toast.makeText(this, "Gagal update Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Failed to update to Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         } else {
             String uid = user.getUid();
@@ -158,14 +158,14 @@ public class ProfileActivity extends AppCompatActivity {
                     .addOnSuccessListener(unused -> finishSuccess())
                     .addOnFailureListener(e -> {
                         btnSave.setEnabled(true);
-                        Toast.makeText(this, "Gagal simpan ke Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Failed to save to Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
         }
     }
 
     private void finishSuccess() {
         btnSave.setEnabled(true);
-        Toast.makeText(this, "Nama berhasil diperbarui", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Name successfully updated", Toast.LENGTH_SHORT).show();
         finish();
     }
 }

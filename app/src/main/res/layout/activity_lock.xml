@@ -4,19 +4,29 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     android:background="#FFFFFF"
     tools:context=".LockActivity">
 
-    <!-- Card Smart Lock -->
+    <!-- TOOLBAR -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="#FFFFFF"
+        app:title="Device Info"
+        app:titleTextColor="#000000"
+        app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <!-- CARD SMART LOCK -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardSmartLock"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="12dp"
+        android:layout_margin="12dp"
         android:elevation="4dp"
         app:cardCornerRadius="20dp"
-        app:cardBackgroundColor="#F9F9F9"
+        app:cardBackgroundColor="#EDEDED"
         app:cardUseCompatPadding="true">
 
         <LinearLayout
@@ -26,17 +36,16 @@
             android:padding="16dp"
             android:gravity="center_vertical">
 
-            <!-- Gambar Smart Lock -->
+            <!-- Gambar -->
             <ImageView
                 android:id="@+id/imgSmartLock"
                 android:layout_width="80dp"
                 android:layout_height="80dp"
                 android:src="@drawable/lock"
-                android:contentDescription="Smart Lock"
                 android:layout_marginEnd="16dp"
                 android:adjustViewBounds="true" />
 
-            <!-- Teks & Toggle -->
+            <!-- Teks -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -47,7 +56,7 @@
                     android:id="@+id/tvSmartLockTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Smart Lock"
+                    android:text="Smart Door"
                     android:textStyle="bold"
                     android:textColor="#333333"
                     android:textSize="20sp" />
@@ -56,49 +65,51 @@
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Status: "
+                    android:text="Status:"
                     android:textColor="#666666"
                     android:textSize="14sp"
                     android:layout_marginTop="4dp" />
             </LinearLayout>
 
-            <!-- Switch On/Off -->
-            <androidx.appcompat.widget.SwitchCompat
+            <!-- Switch -->
+            <Switch
                 android:id="@+id/switchLock"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:scaleX="1.5"
                 android:scaleY="1.5"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="10dp"/>
+                android:layout_marginEnd="10dp" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Card Riwayat -->
+    <!-- CARD RIWAYAT -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="12dp"
         app:cardCornerRadius="16dp"
-        app:cardBackgroundColor="#FFFFFF"
-        android:elevation="3dp"
-        android:layout_marginBottom="16dp">
+        app:cardBackgroundColor="#EDEDED"
+        android:elevation="3dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="12dp"
-            android:text="Riwayat"
+            android:text="History"
             android:textStyle="bold"
             android:textColor="#000000"
             android:textSize="16sp" />
     </androidx.cardview.widget.CardView>
 
+    <!-- LIST RIWAYAT -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerHistory"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:padding="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 

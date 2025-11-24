@@ -48,7 +48,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Suhu Ruangan (°C): "
+                        android:text="Room Temperature (°C): "
                         android:textStyle="bold"
                         android:textSize="18sp"
                         android:textColor="@color/black" />
@@ -107,7 +107,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Kelembapan (%): "
+                        android:text="Humidity (%): "
                         android:textStyle="bold"
                         android:textSize="18sp"
                         android:textColor="@color/black" />
@@ -164,7 +164,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Intensitas Cahaya (Lux): "
+                        android:text="Light Intensity (Lux): "
                         android:textStyle="bold"
                         android:textSize="18sp"
                         android:textColor="@color/black" />
@@ -226,7 +226,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Hujan: "
+                        android:text="Rain Frequency: "
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/black"/>

@@ -1,14 +1,17 @@
 package edu.uph.m23si1.homiguard;
 
+
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -17,14 +20,29 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
+
+import edu.uph.m23si1.homiguard.adapter.HistoryAdapter;
+import edu.uph.m23si1.homiguard.model.HistoryModel;
 
 public class LockActivity extends AppCompatActivity {
 
-    private Switch switchLock;
-    private TextView tvStatus;
-    private DatabaseReference lockRef, historyRef;
+    Switch switchLock;
+    TextView tvStatus;
+    Toolbar toolbar;
+    DatabaseReference lockRef, historyRef;
+
+    RecyclerView recyclerHistory;
+    HistoryAdapter historyAdapter;
+    List<HistoryModel> historyList = new ArrayList<>();
+
+    private boolean isUpdating = false; // 🔥 Supaya tidak trigger history 2x
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,20 +51,38 @@ public class LockActivity extends AppCompatActivity {
 
         switchLock = findViewById(R.id.switchLock);
         tvStatus = findViewById(R.id.tvStatus);
+        recyclerHistory = findViewById(R.id.recyclerHistory);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        lockRef = database.getReference("lock/status");
-        historyRef = database.getReference("history");
+        recyclerHistory.setLayoutManager(new LinearLayoutManager(this));
+        historyAdapter = new HistoryAdapter(historyList);
+        recyclerHistory.setAdapter(historyAdapter);
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
 
-        // 🔹 Baca status realtime
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+
+        // Database reference
+        lockRef = db.getReference("HomiGuard/Device/Lock");
+        historyRef = db.getReference("HomiGuard/History/Lock");
+
+        // **Default locked saat activity dibuka**
+        lockRef.setValue(true);
+
+        loadHistory();
+
+        // 🔹 Listener realtime Firebase
         lockRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Boolean isLocked = snapshot.getValue(Boolean.class);
-                if (isLocked != null) {
-                    switchLock.setChecked(isLocked);
-                    tvStatus.setText(isLocked ? "Door Locked 🔒" : "Door Unlocked 🔓");
-                }
+                if (isLocked == null) return;
+
+                isUpdating = true;  // ⛔ supaya tidak trigger onCheckedChange
+
+                switchLock.setChecked(isLocked);
+                tvStatus.setText(isLocked ? "Door Unlocked 🔓" : "Door Locked 🔒");
+
+                isUpdating = false;
             }
 
             @Override
@@ -55,29 +91,105 @@ public class LockActivity extends AppCompatActivity {
             }
         });
 
-        // 🔹 Ketika toggle ditekan
-        switchLock.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                lockRef.setValue(isChecked);
-                tvStatus.setText(isChecked ? "Door Locked 🔒" : "Door Unlocked 🔓");
+//        // 🔹 Listener saat user toggle manual
+//        switchLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+//
+//            if (isUpdating) return;
+//
+//            // ❗ User hanya boleh UNLOCK (switch ON = unlock)
+//            if (isChecked) {
+//                lockRef.setValue(false); // false = unlocked
+//                tvStatus.setText("Door Unlocked 🔓");
+//                saveToHistory(false);
+//            } else {
+//                // ❌ Jangan biarkan user lock manual
+//                Toast.makeText(this, "Door will auto-lock in a few seconds", Toast.LENGTH_SHORT).show();
+//
+//                // Kembalikan switch ke posisi locked
+//                isUpdating = true;
+//                switchLock.setChecked(true);
+//                isUpdating = false;
+//            }
+//        });
 
-                // Simpan ke History
-                saveToHistory(isChecked);
-            }
-        });
     }
 
-    // 🔹 Simpan riwayat ke Realtime Database
+    // 🔹 Save history
     private void saveToHistory(boolean isLocked) {
-        String status = isLocked ? "Locked" : "Unlocked";
-        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-        String time = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
 
-        DatabaseReference todayRef = historyRef.child(date).push();
-        todayRef.child("status").setValue(status);
-        todayRef.child("time").setValue(time)
-                .addOnSuccessListener(aVoid -> Log.d("LockActivity", "History updated: " + status))
-                .addOnFailureListener(e -> Toast.makeText(this, "Gagal simpan riwayat", Toast.LENGTH_SHORT).show());
+        long timestamp = System.currentTimeMillis();
+        String value = isLocked ? "Locked" : "Unlocked";
+
+        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                .format(new Date(timestamp));
+
+        DatabaseReference newEntry = historyRef.push();
+
+        newEntry.child("device").setValue("Lock");
+        newEntry.child("value").setValue(value);
+        newEntry.child("date").setValue(date);
+        newEntry.child("timestamp").setValue(timestamp)
+                .addOnSuccessListener(a -> Log.d("LockActivity", "History saved"))
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Failed to save history", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    // 🔹 Load history
+    private void loadHistory() {
+        historyRef.orderByChild("timestamp").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                LinkedHashMap<String, ArrayList<HistoryModel>> grouped = new LinkedHashMap<>();
+                historyList.clear();
+
+                // ambil today & yesterday
+                Calendar calNow = Calendar.getInstance();
+                Calendar calYesterday = Calendar.getInstance();
+                calYesterday.add(Calendar.DAY_OF_YEAR, -1);
+
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                String todayStr = sdf.format(calNow.getTime());
+                String yesterdayStr = sdf.format(calYesterday.getTime());
+
+                // group per tanggal
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    HistoryModel item = ds.getValue(HistoryModel.class);
+                    if (item == null) continue;
+
+                    String itemDate = sdf.format(item.getTimestamp());
+
+                    grouped.putIfAbsent(itemDate, new ArrayList<>());
+                    grouped.get(itemDate).add(item);
+                }
+
+                // Convert ke list + header
+                ArrayList<String> dates = new ArrayList<>(grouped.keySet());
+                Collections.reverse(dates); // tanggal terbaru di atas
+
+                for (String date : dates) {
+
+                    String header;
+                    if (date.equals(todayStr)) {
+                        header = "Today";
+                    } else if (date.equals(yesterdayStr)) {
+                        header = "Yesterday";
+                    } else {
+                        header = date;
+                    }
+
+                    // Tambah header
+                    historyList.add(new HistoryModel(header));
+                    // Tambah data history-nya
+                    ArrayList<HistoryModel> items = grouped.get(date);
+                    Collections.reverse(items); // item terbaru tampil dulu
+                    historyList.addAll(items);
+                }
+                historyAdapter.notifyDataSetChanged();
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { }
+        });
     }
 }

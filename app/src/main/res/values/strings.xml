@@ -4,8 +4,8 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string-array name="filter_options">
-        <item>Hari Ini</item>
-        <item>Kemarin</item>
-        <item>Minggu Ini</item>
+        <item>Today</item>
+        <item>Yesterday</item>
+        <item>This Week</item>
     </string-array>
 </resources>
