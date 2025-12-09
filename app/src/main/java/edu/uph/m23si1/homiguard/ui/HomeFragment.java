@@ -79,7 +79,7 @@ public class HomeFragment extends Fragment {
         }
 
         if (email == null) {
-            Toast.makeText(getActivity(), "Email pengguna tidak ditemukan", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "User email not found", Toast.LENGTH_SHORT).show();
             txtNama.setText("Hi, User!");
             return;
         }

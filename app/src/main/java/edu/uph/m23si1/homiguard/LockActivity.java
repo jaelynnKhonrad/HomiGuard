@@ -1,6 +1,5 @@
 package edu.uph.m23si1.homiguard;
 
-
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Switch;
@@ -91,26 +90,26 @@ public class LockActivity extends AppCompatActivity {
             }
         });
 
-//        // 🔹 Listener saat user toggle manual
-//        switchLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
-//
-//            if (isUpdating) return;
-//
-//            // ❗ User hanya boleh UNLOCK (switch ON = unlock)
-//            if (isChecked) {
-//                lockRef.setValue(false); // false = unlocked
-//                tvStatus.setText("Door Unlocked 🔓");
-//                saveToHistory(false);
-//            } else {
-//                // ❌ Jangan biarkan user lock manual
-//                Toast.makeText(this, "Door will auto-lock in a few seconds", Toast.LENGTH_SHORT).show();
-//
-//                // Kembalikan switch ke posisi locked
-//                isUpdating = true;
-//                switchLock.setChecked(true);
-//                isUpdating = false;
-//            }
-//        });
+        // 🔹 Listener saat user toggle manual
+        switchLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
+
+            if (isUpdating) return;
+
+            // ❗ User hanya boleh UNLOCK (switch ON = unlock)
+            if (isChecked) {
+                lockRef.setValue(false); // false = unlocked
+                tvStatus.setText("Door Unlocked 🔓");
+                saveToHistory(false);
+            } else {
+                // ❌ Jangan biarkan user lock manual
+                Toast.makeText(this, "Door will auto-lock in a few seconds", Toast.LENGTH_SHORT).show();
+
+                // Kembalikan switch ke posisi locked
+                isUpdating = true;
+                switchLock.setChecked(true);
+                isUpdating = false;
+            }
+        });
 
     }
 
@@ -144,7 +143,6 @@ public class LockActivity extends AppCompatActivity {
                 LinkedHashMap<String, ArrayList<HistoryModel>> grouped = new LinkedHashMap<>();
                 historyList.clear();
 
-                // ambil today & yesterday
                 Calendar calNow = Calendar.getInstance();
                 Calendar calYesterday = Calendar.getInstance();
                 calYesterday.add(Calendar.DAY_OF_YEAR, -1);
@@ -153,20 +151,33 @@ public class LockActivity extends AppCompatActivity {
                 String todayStr = sdf.format(calNow.getTime());
                 String yesterdayStr = sdf.format(calYesterday.getTime());
 
-                // group per tanggal
+                // ✅ AMBIL NAMA DEVICE DARI PATH FIREBASE (PASTI "Lock")
+                String pathDevice = historyRef.getKey(); // = "Lock"
+
                 for (DataSnapshot ds : snapshot.getChildren()) {
+
                     HistoryModel item = ds.getValue(HistoryModel.class);
                     if (item == null) continue;
 
-                    String itemDate = sdf.format(item.getTimestamp());
+                    // ✅ FALLBACK DEVICE (ANTI UNKNOWN)
+                    if (item.getDevice() == null || item.getDevice().isEmpty()) {
+                        item.setDevice(pathDevice); // otomatis jadi "Lock"
+                    }
 
-                    grouped.putIfAbsent(itemDate, new ArrayList<>());
+                    // ✅ FILTER DATA RUSAK
+                    if (item.getTimestamp() == 0 || item.getValue() == null) continue;
+
+                    String itemDate = sdf.format(new Date(item.getTimestamp()));
+
+                    if (!grouped.containsKey(itemDate)) {
+                        grouped.put(itemDate, new ArrayList<>());
+                    }
+
                     grouped.get(itemDate).add(item);
                 }
 
-                // Convert ke list + header
                 ArrayList<String> dates = new ArrayList<>(grouped.keySet());
-                Collections.reverse(dates); // tanggal terbaru di atas
+                Collections.reverse(dates);
 
                 for (String date : dates) {
 
@@ -179,17 +190,22 @@ public class LockActivity extends AppCompatActivity {
                         header = date;
                     }
 
-                    // Tambah header
                     historyList.add(new HistoryModel(header));
-                    // Tambah data history-nya
+
                     ArrayList<HistoryModel> items = grouped.get(date);
-                    Collections.reverse(items); // item terbaru tampil dulu
-                    historyList.addAll(items);
+                    if (items != null) {
+                        Collections.reverse(items);
+                        historyList.addAll(items);
+                    }
                 }
+
                 historyAdapter.notifyDataSetChanged();
             }
+
             @Override
-            public void onCancelled(@NonNull DatabaseError error) { }
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("LockActivity", "Failed to load history", error.toException());
+            }
         });
     }
 }

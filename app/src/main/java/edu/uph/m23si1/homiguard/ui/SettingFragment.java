@@ -78,7 +78,7 @@ public class SettingFragment extends DialogFragment {
         // 4️⃣ Tutup fragment dialog
         dismiss();
 
-        Toast.makeText(getActivity(), "Berhasil Logout", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getActivity(), "Successfully Logged Out", Toast.LENGTH_SHORT).show();
     }
 
     @Override

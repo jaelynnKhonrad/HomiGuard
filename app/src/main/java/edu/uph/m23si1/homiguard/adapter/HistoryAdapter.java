@@ -54,47 +54,80 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         if (holder instanceof HeaderHolder) {
             ((HeaderHolder) holder).tvHeader.setText(item.getHeaderTitle());
+            return;
         }
 
-        else if (holder instanceof ItemHolder) {
-            ItemHolder ih = (ItemHolder) holder;
+        ItemHolder ih = (ItemHolder) holder;
 
-            ih.tvDevice.setText(item.getDevice());
-            if (item.getDevice().equalsIgnoreCase("water level")) {
+        String device = item.getDevice() == null ? "" : item.getDevice();
+        String deviceName = item.getDeviceName() == null ? "" : item.getDeviceName();
+        String value = item.getValue() == null ? "-" : item.getValue();
 
-                // Water Level → pakai percent + cm
-                String text = item.getPercent() + "% (" + item.getLevelCm() + " cm)";
-                ih.tvValue.setText(text);
+        // ================= DEVICE TEXT =================
+        if (device.equalsIgnoreCase("lighting")) {
+            ih.tvDevice.setText("Lighting - " + deviceName);
+        } else if (!device.isEmpty()) {
+            ih.tvDevice.setText(device);
+        } else {
+            ih.tvDevice.setText("Unknown Device");
+        }
 
-            } else {
+        // ================= VALUE TEXT =================
+        if (device.equalsIgnoreCase("water level")) {
+            String text = item.getPercent() + "% (" + item.getLevelCm() + " cm)";
+            ih.tvValue.setText(text);
+        } else {
+            ih.tvValue.setText(value);
+        }
 
-                // Device lain → tetap pakai value
-                ih.tvValue.setText(item.getValue());
-            }
+        // ================= TIME =================
+        String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
+                .format(item.getTimestamp());
+        ih.tvTime.setText(time);
 
-            // Format time
-            String time = new SimpleDateFormat("HH:mm", Locale.getDefault())
-                    .format(item.getTimestamp());
-            ih.tvTime.setText(time);
+        // ================= ICON (FULL LIGHTING TIDAK DIPOTONG) =================
+        if (device.isEmpty()) {
+            ih.imgIcon.setImageResource(R.drawable.bg_card);
+            return;
+        }
 
-            // Set icon sesuai device
-            switch (item.getDevice().toLowerCase()) {
-                case "lock":
-                    ih.imgIcon.setImageResource(R.drawable.lock);
-                    break;
-                case "lighting":
+        switch (device.toLowerCase()) {
+            case "lock":
+                ih.imgIcon.setImageResource(R.drawable.lock);
+                break;
+
+            case "lighting":
+                if (device != null && !device.isEmpty()) {
+                    String room = device.toLowerCase().trim(); // aman dari spasi & huruf kapital
+
+                    if (room.contains("bedroom")) {
+                        ih.imgIcon.setImageResource(R.drawable.bedroom);
+                    } else if (room.contains("livingroom")) {
+                        ih.imgIcon.setImageResource(R.drawable.living);
+                    } else if (room.contains("kitchen")) {
+                        ih.imgIcon.setImageResource(R.drawable.kitchen);
+                    } else if (room.contains("bathroom")) {
+                        ih.imgIcon.setImageResource(R.drawable.toilet);
+                    } else {
+                        ih.imgIcon.setImageResource(R.drawable.lighting); // default icon
+                    }
+                } else {
+                    // fallback jika device null atau kosong
                     ih.imgIcon.setImageResource(R.drawable.lighting);
-                    break;
-                case "water level":
-                    ih.imgIcon.setImageResource(R.drawable.tank);
-                    break;
-                case "laundry":
-                    ih.imgIcon.setImageResource(R.drawable.rain);
-                    break;
-                default:
-                    ih.imgIcon.setImageResource(R.drawable.bg_card);
-                    break;
-            }
+                }
+
+            case "water level":
+                ih.imgIcon.setImageResource(R.drawable.tank);
+                break;
+
+            case "laundry":
+                String status = value.toLowerCase();
+                if (status.equals("it's not raining")) {
+                    ih.imgIcon.setImageResource(R.drawable.sun); // gambar hujan
+                } else {
+                    ih.imgIcon.setImageResource(R.drawable.rain); // gambar cerah / tidak hujan
+                }
+                break;
         }
     }
 
@@ -105,6 +138,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     static class HeaderHolder extends RecyclerView.ViewHolder {
         TextView tvHeader;
+
         public HeaderHolder(@NonNull View itemView) {
             super(itemView);
             tvHeader = itemView.findViewById(R.id.tvHeader);

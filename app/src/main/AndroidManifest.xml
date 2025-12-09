@@ -31,20 +31,15 @@
             android:exported="false" />
 
         <activity
-            android:name=".ScheduleActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ScheduleListActivity"
-            android:exported="false" />
-
-
-        <activity
             android:name=".RegisterActivity"
             android:exported="false" />
 
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileActivity"
             android:exported="false" />
 
         <activity

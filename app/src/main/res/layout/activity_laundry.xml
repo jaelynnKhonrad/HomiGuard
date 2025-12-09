@@ -33,15 +33,18 @@
             app:navigationIcon="@drawable/ic_arrow_back" />
 
         <!-- CARD SMART LOCK -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardSmartLock"
+        <LinearLayout
+            android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            android:elevation="4dp"
-            app:cardCornerRadius="20dp"
-            app:cardBackgroundColor="#DCDCDC"
-            app:cardUseCompatPadding="true">
+            android:layout_marginHorizontal="12dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="@drawable/kotak"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -92,7 +95,7 @@
                     android:layout_marginEnd="10dp" />
 
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </LinearLayout>
 
         <!-- CARD RIWAYAT -->
         <androidx.cardview.widget.CardView
@@ -189,7 +192,7 @@
                 android:backgroundTint="@color/jordyblue"
                 android:text="Add Schedule"
                 android:textAllCaps="false"
-                android:textColor="#FFF" />
+                android:textColor="#000" />
         </LinearLayout>
 
         <!-- ADD SCHEDULE FORM -->

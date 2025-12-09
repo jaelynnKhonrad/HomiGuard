@@ -38,9 +38,8 @@ import edu.uph.m23si1.homiguard.R;
 
 public class StatisticFragment extends Fragment {
 
-    private TextView txvSuhu, txvKelembapan, txvIntensitas, txvHujan;
-    private LineChart chartTemp, chartHumidity, chartLight, chartRain;
-    private Spinner spinnerTemp, spinnerHumidity, spinnerLight, spinnerRain;
+    private TextView txvSuhu, txvKelembapan;
+    private LineChart chartTemp, chartHumidity;
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     private final List<Entry> suhuEntries = new ArrayList<>();
@@ -58,18 +57,9 @@ public class StatisticFragment extends Fragment {
         // Bind views
         txvSuhu = view.findViewById(R.id.txvSuhu);
         txvKelembapan = view.findViewById(R.id.txvKelembapan);
-        txvIntensitas = view.findViewById(R.id.txvIntensitas);
-        txvHujan = view.findViewById(R.id.txvHujan);
 
         chartTemp = view.findViewById(R.id.chartTemp);
         chartHumidity = view.findViewById(R.id.chartHumidity);
-        chartLight = view.findViewById(R.id.chartLight);
-        chartRain = view.findViewById(R.id.charRain);
-
-        spinnerTemp = view.findViewById(R.id.spinnerTemp);
-        spinnerHumidity = view.findViewById(R.id.spinnerHumidity);
-        spinnerLight = view.findViewById(R.id.spinnerLight);
-        spinnerRain = view.findViewById(R.id.spinnerRain);
 
         startRealtimeListener();
         return view;
@@ -144,28 +134,6 @@ public class StatisticFragment extends Fragment {
         chartHumidity.getDescription().setText("Grafik Kelembapan");
         chartHumidity.invalidate();
 
-        // === CAHAYA ===
-        LineDataSet setCahaya = new LineDataSet(cahayaEntries, "Cahaya (Lux)");
-        setCahaya.setColor(ColorTemplate.rgb("#FFC107"));
-        setCahaya.setCircleColor(ColorTemplate.rgb("#FFC107"));
-        setCahaya.setValueTextColor(Color.BLACK);
-        setCahaya.setValueTextSize(9f);
-        chartLight.setData(new LineData(setCahaya));
-        setupXAxis(chartLight);
-        chartLight.getDescription().setText("Grafik Cahaya");
-        chartLight.invalidate();
-
-        // === HUJAN ===
-        LineDataSet setHujan = new LineDataSet(hujanEntries, "Sensor Hujan");
-        setHujan.setColor(ColorTemplate.rgb("#2196F3"));
-        setHujan.setCircleColor(ColorTemplate.rgb("#2196F3"));
-        setHujan.setValueTextColor(Color.BLACK);
-        setHujan.setValueTextSize(9f);
-        chartRain.setData(new LineData(setHujan));
-        setupXAxis(chartRain);
-        chartRain.getDescription().setText("Grafik Sensor Hujan");
-        chartRain.invalidate();
-
         // === Update nilai terakhir ===
         if (!suhuEntries.isEmpty()) {
             txvSuhu.setText(String.format(Locale.getDefault(), "%.1f°C",
@@ -174,16 +142,6 @@ public class StatisticFragment extends Fragment {
         if (!kelembapanEntries.isEmpty()) {
             txvKelembapan.setText(String.format(Locale.getDefault(), "%.1f%%",
                     kelembapanEntries.get(kelembapanEntries.size() - 1).getY()));
-        }
-        if (!cahayaEntries.isEmpty()) {
-            txvIntensitas.setText(String.format(Locale.getDefault(), "%.0f lx",
-                    cahayaEntries.get(cahayaEntries.size() - 1).getY()));
-        }
-        if (!hujanEntries.isEmpty()) {
-            float latest = hujanEntries.get(hujanEntries.size() - 1).getY();
-            if (latest == 0) txvHujan.setText("Tidak Hujan");
-            else if (latest == 1) txvHujan.setText("Hujan Ringan");
-            else txvHujan.setText("Hujan Lebat");
         }
     }
 

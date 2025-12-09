@@ -35,34 +35,50 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
     @NonNull
     @Override
     public ScheduleViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_schedule, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_schedule, parent, false);
         return new ScheduleViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ScheduleViewHolder holder, int position) {
+
         ScheduleItem item = scheduleList.get(position);
+        String type = item.getPageType().toLowerCase();
+
+        // HANDLE DEVICE NAME VISIBILITY
+        if (type.equals("laundry")) {
+            // Laundry hanya 1 device → sembunyikan
+            holder.tvDeviceName.setVisibility(View.GONE);
+        }
+        else if (type.equals("lighting")) {
+            // Lighting → tampilkan nama ruangan
+            holder.tvDeviceName.setVisibility(View.VISIBLE);
+            holder.tvDeviceName.setText(item.getDeviceName());
+        }
+        else {
+            // Lock, water level → biasanya tidak perlu tampilkan
+            holder.tvDeviceName.setVisibility(View.GONE);
+        }
 
         // SET DATE
         holder.tvDate.setText(item.getDate());
 
-        // SET TIME: "08:00 - 16:30"
+        // SET TIME
         String combinedTime = item.getOnTime() + " - " + item.getOffTime();
         holder.tvTime.setText(combinedTime);
 
-        // IMPORTANT: remove listener first
+        // REMOVE OLD LISTENER
         holder.switchActive.setOnCheckedChangeListener(null);
 
-        // SET ACTIVE
+        // SET ACTIVE SWITCH
         holder.switchActive.setChecked(item.isActive());
 
         // UPDATE ACTIVE KE FIREBASE
         holder.switchActive.setOnCheckedChangeListener((buttonView, isChecked) -> {
 
-            // update model
             item.setActive(isChecked);
 
-            // update ke firebase
             scheduleRef.child(item.getId()).child("active")
                     .setValue(isChecked)
                     .addOnSuccessListener(a ->
@@ -77,13 +93,17 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
                     );
         });
 
-        // DELETE SCHEDULE
+        // DELETE BUTTON
         holder.btnDelete.setOnClickListener(v -> {
             scheduleRef.child(item.getId()).removeValue()
                     .addOnSuccessListener(aVoid ->
-                            Toast.makeText(v.getContext(), "Schedule deleted", Toast.LENGTH_SHORT).show())
+                            Toast.makeText(v.getContext(),
+                                    "Schedule deleted",
+                                    Toast.LENGTH_SHORT).show())
                     .addOnFailureListener(e ->
-                            Toast.makeText(v.getContext(), "Failed to delete schedule", Toast.LENGTH_SHORT).show());
+                            Toast.makeText(v.getContext(),
+                                    "Failed to delete schedule",
+                                    Toast.LENGTH_SHORT).show());
         });
     }
 
@@ -93,12 +113,14 @@ public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.Schedu
     }
 
     static class ScheduleViewHolder extends RecyclerView.ViewHolder {
-        TextView tvDate, tvTime;
+        TextView tvDeviceName, tvDate, tvTime;
         Switch switchActive;
         ImageButton btnDelete;
 
         public ScheduleViewHolder(@NonNull View itemView) {
             super(itemView);
+
+            tvDeviceName = itemView.findViewById(R.id.tvDeviceName);
             tvDate = itemView.findViewById(R.id.tvDate);
             tvTime = itemView.findViewById(R.id.tvTime);
             switchActive = itemView.findViewById(R.id.switchActive);

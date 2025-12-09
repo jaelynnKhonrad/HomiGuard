@@ -50,6 +50,11 @@
           <theme>@style/Theme.HomiGuard</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/home.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/ic_arrow_back.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
@@ -65,7 +70,7 @@
           <theme>@style/Theme.HomiGuard</theme>
         </config>
       </layout>
-      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml">
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_laundry.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
         </config>
@@ -86,6 +91,11 @@
         </config>
       </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
         </config>
@@ -125,6 +135,11 @@
           <theme>@style/Theme.HomiGuard</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_history.xml">
+        <config>
+          <theme>@style/Theme.HomiGuard</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_rain_card.xml">
         <config>
           <theme>@style/Theme.HomiGuard</theme>
@@ -142,14 +157,48 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b212cfda-e4af-40ea-a1ee-ae8301e4e1f1" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bedroom.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bg_spinner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bgroom.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/kitchen.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/kotak.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/lamp.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/living.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/sun.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/tab_active.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/tab_inactive.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/toilet.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.bin" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/config.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/config.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/HomiGuard.iml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LaundryActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LaundryActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LightingActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LightingActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LockActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LockActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LoginActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LoginActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/WaterActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/WaterActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/HistoryAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/HistoryAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/ScheduleAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/ScheduleAdapter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/model/HistoryModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/model/HistoryModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/HomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/HomeFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/SettingFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/SettingFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/StatisticFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/StatisticFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_laundry.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lighting.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lighting.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lock.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lock.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_schedule2.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_schedule_list.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_water.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_water.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_setting.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_setting.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_statistic.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_statistic.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/item_rain_card.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/item_water_card.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -160,7 +209,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=/Users/veliciaslaptop/.android/avd/Medium_Phone.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\Student\.android\avd\Medium_Phone.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -201,8 +250,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
-    "url": "git@github.com:jaelynnKhonrad/HomiGuard.git",
-    "accountId": "7d1b58f8-5ba8-47aa-bdfc-7fc9ec6fc38d"
+    "url": "https://github.com/jaelynnKhonrad/HomiGuard.git",
+    "accountId": "b7c760d4-52a3-4394-adea-850b500aa826"
   }
 }]]></component>
   <component name="ProblemsViewState">
@@ -227,11 +276,12 @@
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/veliciaslaptop/Dropbox/Mac/Desktop/HomiGuard/app/src/main/res/drawable"
+    "last_opened_file_path": "C:/Homiguard/app/src/main/res/drawable"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Homiguard\app\src\main\res\drawable" />
       <recent name="$PROJECT_DIR$/app/src/main/res/drawable" />
       <recent name="$PROJECT_DIR$/app/src/main/res/layout" />
     </key>
@@ -351,12 +401,12 @@
       <map>
         <entry key="edu.uph.m23si1.homiguard">
           <value>
-            <CheckInfo lastCheckTimestamp="1763180585344" />
+            <CheckInfo lastCheckTimestamp="1765263602856" />
           </value>
         </entry>
         <entry key="edu.uph.m23si1.homiguard.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1763180585329" />
+            <CheckInfo lastCheckTimestamp="1765263602887" />
           </value>
         </entry>
       </map>

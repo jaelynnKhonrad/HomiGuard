@@ -89,51 +89,66 @@ public class WaterActivity extends AppCompatActivity {
     }
 
     private void loadWaterHistory() {
-        ref.child("history").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                list.clear();
+        ref.child("history")
+                .orderByChild("timestamp")   // WAJIB supaya urut!!!
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        list.clear();
 
-                String currentHeader = "";
-                SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+                        String currentHeader = "";
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    Long ts = data.child("timestamp").getValue(Long.class);
-                    Integer cm = data.child("distance_cm").getValue(Integer.class);
-                    Integer percent = data.child("percent").getValue(Integer.class);
+                        for (DataSnapshot data : snapshot.getChildren()) {
 
-                    if (ts == null) continue;
+                            Object tsObj = data.child("timestamp").getValue();
+                            long ts = 0;
 
-                    String date = sdf.format(new Date(ts));
+                            if (tsObj instanceof Long) {
+                                ts = (Long) tsObj;
+                            } else if (tsObj instanceof String) {
+                                try { ts = Long.parseLong((String) tsObj); } catch (Exception ignored) {}
+                            }
 
-                    // bikin header per tanggal
-                    if (!currentHeader.equals(date)) {
-                        currentHeader = date;
-                        list.add(new HistoryModel(currentHeader)); // header
+                            // Jika timestamp masih detik → convert ke milidetik
+                            if (ts < 2000000000L) {
+                                ts = ts * 1000;
+                            }
+
+                            Integer cm = data.child("distance_cm").getValue(Integer.class);
+                            Integer percent = data.child("percent").getValue(Integer.class);
+
+                            if (ts == 0) continue;
+
+                            String date = sdf.format(new Date(ts));
+
+                            // Tambah header jika tanggal beda
+                            if (!date.equals(currentHeader)) {
+                                currentHeader = date;
+                                list.add(new HistoryModel(currentHeader));
+                            }
+
+                            // Tampilkan nilai yang digunakan
+                            String finalValue = "-";
+                            if (percent != null) finalValue = percent + " %";
+                            else if (cm != null) finalValue = cm + " cm";
+
+                            HistoryModel model = new HistoryModel(
+                                    "Water Level",
+                                    finalValue,   // <-- Ini yang benar
+                                    percent,
+                                    cm,
+                                    ts
+                            );
+
+                            list.add(model);
+                        }
+
+                        historyAdapter.notifyDataSetChanged();
                     }
 
-                    // value display
-                    String finalValue;
-                    if (cm != null) finalValue = cm + " cm";
-                    else if (percent != null) finalValue = percent + " %";
-                    else finalValue = "-";
-
-                    HistoryModel model = new HistoryModel(
-                            "Water Level",
-                            "-",
-                            percent,
-                            cm,
-                            ts
-                    );
-
-                    list.add(model);
-                }
-
-                historyAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
     }
 }

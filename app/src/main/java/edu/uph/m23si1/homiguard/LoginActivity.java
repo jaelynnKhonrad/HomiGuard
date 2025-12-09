@@ -2,12 +2,13 @@ package edu.uph.m23si1.homiguard;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.Spanned;
+import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.TextPaint;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -22,14 +23,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import android.graphics.Color;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -37,6 +33,7 @@ public class LoginActivity extends AppCompatActivity {
     Button loginButton;
     CheckBox rememberMeCheck;
     TextView signUpText;
+
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -58,40 +55,51 @@ public class LoginActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Inisialisasi
+        // ===== INISIALISASI FIREBASE =====
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+
+        // ===== INISIALISASI VIEW =====
         emailInput = findViewById(R.id.emailInput);
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
         rememberMeCheck = findViewById(R.id.rememberMeCheck);
         signUpText = findViewById(R.id.signUpText);
 
+        // ===== SHARED PREFERENCES =====
         sharedPreferences = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
         checkRememberedLogin();
 
+        // ===== LOGIN BUTTON =====
         loginButton.setOnClickListener(v -> {
+
             String email = emailInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Email and Password cannot be empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this,
+                        "Email dan Password tidak boleh kosong",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
 
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
+
                         if (task.isSuccessful()) {
-                            // Ambil data user dari Firestore berdasarkan email
+
+                            // ===== AMBIL DATA USER DARI FIRESTORE =====
                             db.collection("User_HomiGuard")
                                     .whereEqualTo("email", email)
                                     .get()
                                     .addOnSuccessListener(query -> {
+
                                         if (!query.isEmpty()) {
                                             for (QueryDocumentSnapshot document : query) {
+
                                                 String nama = document.getString("username");
 
-                                                // 🔹 Cek apakah checkbox diaktifkan
+                                                // ===== REMEMBER ME =====
                                                 if (rememberMeCheck.isChecked()) {
                                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                                     editor.putBoolean(KEY_REMEMBER, true);
@@ -99,25 +107,34 @@ public class LoginActivity extends AppCompatActivity {
                                                     editor.putLong(KEY_TIME, System.currentTimeMillis());
                                                     editor.apply();
                                                 } else {
-                                                    // 🔹 Hapus data kalau user gak mau diingat
                                                     SharedPreferences.Editor editor = sharedPreferences.edit();
                                                     editor.clear();
                                                     editor.apply();
                                                 }
 
-                                                Toast.makeText(LoginActivity.this, "Welcome, " + nama + "!", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(LoginActivity.this,
+                                                        "Welcome, " + nama + "!",
+                                                        Toast.LENGTH_SHORT).show();
+
                                                 toMain();
                                                 return;
                                             }
                                         } else {
-                                            Toast.makeText(LoginActivity.this, "User data not found in Firestore.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(LoginActivity.this,
+                                                    "User ada di Auth tapi tidak ada di Firestore!",
+                                                    Toast.LENGTH_SHORT).show();
                                         }
                                     })
                                     .addOnFailureListener(e -> {
-                                        Toast.makeText(LoginActivity.this, "Failed to retrieve Firestore data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(LoginActivity.this,
+                                                "Firestore Error: " + e.getMessage(),
+                                                Toast.LENGTH_LONG).show();
                                     });
+
                         } else {
-                            Toast.makeText(LoginActivity.this, "Login failed. Check your email & password.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(LoginActivity.this,
+                                    "Login gagal! Cek email & password!",
+                                    Toast.LENGTH_LONG).show();
                         }
                     });
         });
@@ -125,21 +142,26 @@ public class LoginActivity extends AppCompatActivity {
         setClickableSignupText();
     }
 
+    // ===== AUTO LOGIN JIKA REMEMBER ME AKTIF =====
     private void checkRememberedLogin() {
         boolean isRemembered = sharedPreferences.getBoolean(KEY_REMEMBER, false);
         long savedTime = sharedPreferences.getLong(KEY_TIME, 0);
         long currentTime = System.currentTimeMillis();
 
+        // 30 hari = 2592000000 ms
         if (isRemembered && (currentTime - savedTime < 2592000000L)) {
             String savedEmail = sharedPreferences.getString(KEY_EMAIL, null);
             if (savedEmail != null) {
-                Toast.makeText(this, "Welcome back, " + savedEmail, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,
+                        "Welcome back, " + savedEmail,
+                        Toast.LENGTH_SHORT).show();
                 toMain();
                 finish();
             }
         }
     }
 
+    // ===== TEXT SIGN UP KLIKABLE =====
     private void setClickableSignupText() {
         String text = "Don’t have an account? Sign Up";
         SpannableString ss = new SpannableString(text);

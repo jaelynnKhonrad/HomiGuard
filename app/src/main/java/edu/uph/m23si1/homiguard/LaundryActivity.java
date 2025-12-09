@@ -228,7 +228,7 @@ public class LaundryActivity extends AppCompatActivity {
 
         HistoryModel item = new HistoryModel(
                 "Laundry",
-                isOn ? "On" : "Off",
+                isOn ? "It's not raining" : "It's raining",
                 0,
                 0,
                 timestamp
