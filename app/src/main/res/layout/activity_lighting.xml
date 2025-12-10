@@ -30,10 +30,10 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="#FFFFFF"
-            app:navigationIcon="@drawable/ic_arrow_back"
             app:title="Device Info"
+            app:titleTextColor="#000000"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
-            app:titleTextColor="#000000" />
+            app:navigationIcon="@drawable/ic_arrow_back" />
 
         <!-- HEADER -->
         <LinearLayout
@@ -338,7 +338,7 @@
         <View
             android:id="@+id/schedulespacer"
             android:layout_width="match_parent"
-            android:layout_height="185dp"/>
+            android:layout_height="143dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerHistory"
