@@ -1,9 +1,10 @@
 package edu.uph.m23si1.homiguard;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
-import androidx.appcompat.widget.Toolbar;
 
+import androidx.appcompat.widget.Toolbar;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,21 +14,17 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Locale;
+import java.util.*;
 
 import edu.uph.m23si1.homiguard.adapter.HistoryAdapter;
 import edu.uph.m23si1.homiguard.model.HistoryModel;
 
 public class WaterActivity extends AppCompatActivity {
+
+    private static final String TAG = "WaterActivity";
 
     Toolbar toolbar;
     TextView tvCurrentLevel;
@@ -36,7 +33,17 @@ public class WaterActivity extends AppCompatActivity {
     HistoryAdapter historyAdapter;
     ArrayList<HistoryModel> list = new ArrayList<>();
 
-    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("water");
+    // 🔥 PATH BARU SESUAI DATABASE
+    DatabaseReference refStatus = FirebaseDatabase.getInstance()
+            .getReference("HomiGuard")
+            .child("Device")
+            .child("Water")
+            .child("status");
+
+    DatabaseReference refHistory = FirebaseDatabase.getInstance()
+            .getReference("HomiGuard")
+            .child("History")
+            .child("Water");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +58,7 @@ public class WaterActivity extends AppCompatActivity {
         });
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setOnClickListener(v -> finish());
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         tvCurrentLevel = findViewById(R.id.tvCurrentLevel);
         recyclerHistory = findViewById(R.id.recyclerHistory);
@@ -64,91 +71,149 @@ public class WaterActivity extends AppCompatActivity {
         loadWaterHistory();
     }
 
+    // ============================================================
+    // 🔵 LOAD CURRENT STATUS (REALTIME)
+    // ============================================================
+
     private void loadCurrentWaterStatus() {
-        ref.child("status").addValueEventListener(new ValueEventListener() {
+
+        DatabaseReference refStatus = FirebaseDatabase.getInstance()
+                .getReference("HomiGuard")
+                .child("Device")
+                .child("Water");
+
+        refStatus.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()) return;
 
-                // misal dari Arduino: { "distance_cm": 13 }
-                Integer cm = snapshot.child("distance_cm").getValue(Integer.class);
-                Integer percent = snapshot.child("percent").getValue(Integer.class);
+                if (!snapshot.exists()) {
+                    tvCurrentLevel.setText("No Data");
+                    return;
+                }
 
-                if (cm != null) {
-                    tvCurrentLevel.setText(cm + " cm");
-                } else if (percent != null) {
-                    tvCurrentLevel.setText(percent + " %");
+                Double waterValue = snapshot.getValue(Double.class);
+
+                if (waterValue != null) {
+                    tvCurrentLevel.setText(waterValue + " %");
                 } else {
                     tvCurrentLevel.setText("No Data");
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("WATER", "Cancelled", error.toException());
+            }
         });
     }
 
+
+
+
+
+
+    // ============================================================
+    // 🔵 LOAD HISTORY
+    // ============================================================
     private void loadWaterHistory() {
-        ref.child("history")
-                .orderByChild("timestamp")   // WAJIB supaya urut!!!
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        list.clear();
 
-                        String currentHeader = "";
-                        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+        Query query = refHistory.orderByChild("timestamp").limitToLast(50);
 
-                        for (DataSnapshot data : snapshot.getChildren()) {
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                            Object tsObj = data.child("timestamp").getValue();
-                            long ts = 0;
+                list.clear();
 
-                            if (tsObj instanceof Long) {
-                                ts = (Long) tsObj;
-                            } else if (tsObj instanceof String) {
-                                try { ts = Long.parseLong((String) tsObj); } catch (Exception ignored) {}
-                            }
+                if (!snapshot.exists()) {
+                    historyAdapter.notifyDataSetChanged();
+                    return;
+                }
 
-                            // Jika timestamp masih detik → convert ke milidetik
-                            if (ts < 2000000000L) {
-                                ts = ts * 1000;
-                            }
+                String currentHeader = "";
+                SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
 
-                            Integer cm = data.child("distance_cm").getValue(Integer.class);
-                            Integer percent = data.child("percent").getValue(Integer.class);
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    try {
+                        Long ts = parseLong(data.child("timestamp").getValue());
+                        if (ts == null) continue;
 
-                            if (ts == 0) continue;
+                        // convert to ms
+                        if (ts < 100000000000L) ts *= 1000;
 
-                            String date = sdf.format(new Date(ts));
+                        String date = sdf.format(new Date(ts));
 
-                            // Tambah header jika tanggal beda
-                            if (!date.equals(currentHeader)) {
-                                currentHeader = date;
-                                list.add(new HistoryModel(currentHeader));
-                            }
-
-                            // Tampilkan nilai yang digunakan
-                            String finalValue = "-";
-                            if (percent != null) finalValue = percent + " %";
-                            else if (cm != null) finalValue = cm + " cm";
-
-                            HistoryModel model = new HistoryModel(
-                                    "Water Level",
-                                    finalValue,   // <-- Ini yang benar
-                                    percent,
-                                    cm,
-                                    ts
-                            );
-
-                            list.add(model);
+                        // add date header
+                        if (!date.equals(currentHeader)) {
+                            currentHeader = date;
+                            list.add(new HistoryModel(currentHeader));
                         }
 
-                        historyAdapter.notifyDataSetChanged();
-                    }
+                        Double levelCm = parseDouble(data.child("levelCm").getValue());
+                        Integer percent = parseInt(data.child("percent").getValue());
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
-                });
+                        String finalVal;
+                        if (percent != null) {
+                            finalVal = percent + " %";
+                        } else if (levelCm != null) {
+                            finalVal = String.format(Locale.getDefault(), "%.2f cm", levelCm);
+                        } else {
+                            finalVal = "-";
+                        }
+
+                        list.add(new HistoryModel(
+                                "Water Level",
+                                finalVal,
+                                percent,
+                                levelCm != null ? levelCm.intValue() : null,
+                                ts
+                        ));
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "History parsing error", e);
+                    }
+                }
+
+                historyAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e(TAG, "History cancelled", error.toException());
+            }
+        });
+    }
+
+    // ============================================================
+    // 🔵 Helper Parsing
+    // ============================================================
+    private Double parseDouble(Object obj) {
+        try {
+            if (obj instanceof Double) return (Double) obj;
+            if (obj instanceof Long) return ((Long) obj).doubleValue();
+            if (obj instanceof Integer) return ((Integer) obj).doubleValue();
+            if (obj instanceof String) return Double.parseDouble((String) obj);
+        } catch (Exception e) {}
+        return null;
+    }
+
+    private Integer parseInt(Object obj) {
+        try {
+            if (obj instanceof Integer) return (Integer) obj;
+            if (obj instanceof Long) return ((Long) obj).intValue();
+            if (obj instanceof Double) return ((Double) obj).intValue();
+            if (obj instanceof String) return Integer.parseInt((String) obj);
+        } catch (Exception e) {}
+        return null;
+    }
+
+    private Long parseLong(Object obj) {
+        try {
+            if (obj instanceof Long) return (Long) obj;
+            if (obj instanceof Integer) return ((Integer) obj).longValue();
+            if (obj instanceof Double) return ((Double) obj).longValue();
+            if (obj instanceof String) return Long.parseLong((String) obj);
+        } catch (Exception e) {}
+        return null;
     }
 }

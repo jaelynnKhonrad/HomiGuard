@@ -6,7 +6,10 @@ import static android.view.View.VISIBLE;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -17,6 +20,7 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -34,9 +38,11 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import edu.uph.m23si1.homiguard.adapter.HistoryAdapter;
 import edu.uph.m23si1.homiguard.adapter.ScheduleAdapter;
@@ -69,6 +75,12 @@ public class LightingActivity extends AppCompatActivity {
     DatabaseReference lightingRoot;
     DatabaseReference historyRef;
     DatabaseReference scheduleRef;
+
+    // Scheduler checker
+    private final Handler schedulerHandler = new Handler(Looper.getMainLooper());
+    private final long SCHEDULER_INTERVAL_MS = 30 * 1000L; // 30 seconds
+    // prevents re-triggering same schedule many times in same minute
+    private final Map<String, Long> lastExecuted = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,104 +136,10 @@ public class LightingActivity extends AppCompatActivity {
         btnHistory = findViewById(R.id.btnHistory);
         gridRooms = findViewById(R.id.gridRooms);
 
-        // Toolbar back
-        toolbar.setNavigationOnClickListener(v -> {
-            if (addScheduleContainer.getVisibility() == VISIBLE) {
-                addScheduleContainer.setVisibility(GONE);
-                scheduleListContainer.setVisibility(VISIBLE);
-                toolbar.setTitle("Schedule");
-            } else finish();
-        });
-
-        btnRoom.setOnClickListener(v -> {
-            gridRooms.setVisibility(View.VISIBLE);
-            schedulespacer.setVisibility(View.VISIBLE);
-            recyclerHistory.setVisibility(View.GONE);
-            btnRoom.setBackgroundResource(R.drawable.tab_active);
-            btnHistory.setBackgroundResource(R.drawable.tab_inactive);
-        });
-
-        btnHistory.setOnClickListener(v -> {
-            gridRooms.setVisibility(View.GONE);
-            schedulespacer.setVisibility(View.GONE);
-            recyclerHistory.setVisibility(View.VISIBLE);
-            btnRoom.setBackgroundResource(R.drawable.tab_inactive);
-            btnHistory.setBackgroundResource(R.drawable.tab_active);
-        });
-
-        // Set initial selected room
-        spinnerRoom.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                selectedRoom = parent.getItemAtPosition(position).toString();
-                loadRoomStatus(); // ganti status sesuai ruangan
-            }
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-        });
-
-        // Switch listener
-        switchBedroom.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isUpdating) return;
-            lightingRoot.child("Bedroom").setValue(isChecked);
-            saveToHistory("Bedroom", isChecked);
-            tvStatusBedroom.setText(isChecked ? "ON 💡" : "OFF");
-        });
-        switchKitchen.setOnCheckedChangeListener((btn, isChecked) -> {
-            if (isUpdating) return;
-            lightingRoot.child("Kitchen").setValue(isChecked);
-            saveToHistory("Kitchen", isChecked);
-            tvStatusKitchen.setText(isChecked ? "ON 💡" : "OFF");
-        });
-        switchLiving.setOnCheckedChangeListener((btn, isChecked) -> {
-            if (isUpdating) return;
-            lightingRoot.child("Livingroom").setValue(isChecked);
-            saveToHistory("Livingroom", isChecked);
-            tvStatusLiving.setText(isChecked ? "ON 💡" : "OFF");
-        });
-        switchBathroom.setOnCheckedChangeListener((btn, isChecked) -> {
-            if (isUpdating) return;
-            lightingRoot.child("Bathroom").setValue(isChecked);
-            saveToHistory("Bathroom", isChecked);
-            tvStatusBathroom.setText(isChecked ? "ON 💡" : "OFF");
-        });
-
-        // Bottom Sheet
-        View bottomSheet = findViewById(R.id.bottomSheet);
-        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
-        bottomSheetBehavior.setHideable(true);
-        bottomSheetBehavior.setFitToContents(true);
-        bottomSheetBehavior.setPeekHeight(0);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-
-        btnSchedule.setOnClickListener(v -> {
-            dimArea.setVisibility(VISIBLE);
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            recyclerHistory.setZ(-10f);
-        });
-
-        dimArea.setOnClickListener(v -> closeBottomSheet());
-
-        btnAddSchedule.setOnClickListener(v -> {
-            scheduleListContainer.setVisibility(GONE);
-            addScheduleContainer.setVisibility(VISIBLE);
-            toolbar.setTitle("Add Schedule");
-        });
-
-        rbEveryday.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                selectedDate = "Everyday";
-                layoutDateSelector.setVisibility(GONE);
-                dateSpacer.setVisibility(VISIBLE);
-            }
-        });
-
-        rbOnce.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                dateSpacer.setVisibility(GONE);
-                layoutDateSelector.setVisibility(VISIBLE);
-            }
-        });
+        setupSpinner();
+        setupToolbarAndTabs();
+        setupSwitchControls();
+        setupBottomSheetControls();
 
         etDate.setOnClickListener(v -> pickDate());
 
@@ -247,68 +165,263 @@ public class LightingActivity extends AppCompatActivity {
 
         loadScheduleData();
         loadHistory();
-        loadRoomStatus(); // load status awal ruangan default
+        attachAllRoomListeners(); // attaches Firebase listeners to switches (keeps UI in sync)
+
+        // Start simple scheduler checker (runs while app process alive)
+        startSchedulerChecker();
     }
 
-    // Load status masing-masing ruangan
-    private void loadRoomStatus() {
-        lightingRoot.child("Bedroom").addValueEventListener(new ValueEventListener() {
+    // ------------------------
+    // setup helpers
+    // ------------------------
+    private void setupSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.room_options,
+                android.R.layout.simple_spinner_item
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerRoom.setAdapter(adapter);
+
+        spinnerRoom.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
             @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Boolean isOn = snapshot.getValue(Boolean.class);
-
-                isUpdating = true;
-                switchBedroom.setChecked(isOn != null && isOn);
-                isUpdating = false;
-
-                tvStatusBedroom.setText((isOn != null && isOn) ? "ON 💡" : "OFF");
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                selectedRoom = parent.getItemAtPosition(position).toString();
+                // we keep loadRoomStatus general; the UI listeners already update switches
             }
-            @Override
-            public void onCancelled(DatabaseError error) {}
-        });
-        lightingRoot.child("Kitchen").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Boolean isOn = snapshot.getValue(Boolean.class);
 
-                isUpdating = true;
-                switchKitchen.setChecked(isOn != null && isOn);
-                isUpdating = false;
-
-                tvStatusKitchen.setText((isOn != null && isOn) ? "ON 💡" : "OFF");
-            }
             @Override
-            public void onCancelled(DatabaseError error) {}
-        });
-        lightingRoot.child("Livingroom").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Boolean isOn = snapshot.getValue(Boolean.class);
-
-                isUpdating = true;
-                switchLiving.setChecked(isOn != null && isOn);
-                isUpdating = false;
-
-                tvStatusLiving.setText((isOn != null && isOn) ? "ON 💡" : "OFF");
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {}
-        });
-        lightingRoot.child("Bathroom").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                Boolean isOn = snapshot.getValue(Boolean.class);
-
-                isUpdating = true;
-                switchBathroom.setChecked(isOn != null && isOn);
-                isUpdating = false;
-
-                tvStatusBathroom.setText((isOn != null && isOn) ? "ON 💡" : "OFF");
-            }
-            @Override
-            public void onCancelled(DatabaseError error) {}
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
     }
+
+    private void setupToolbarAndTabs() {
+        // Toolbar back
+        toolbar.setNavigationOnClickListener(v -> {
+            if (addScheduleContainer.getVisibility() == VISIBLE) {
+                addScheduleContainer.setVisibility(GONE);
+                scheduleListContainer.setVisibility(VISIBLE);
+                toolbar.setTitle("Schedule");
+            } else finish();
+        });
+
+        btnRoom.setOnClickListener(v -> {
+            gridRooms.setVisibility(View.VISIBLE);
+            schedulespacer.setVisibility(View.VISIBLE);
+            recyclerHistory.setVisibility(View.GONE);
+            btnRoom.setBackgroundResource(R.drawable.tab_active);
+            btnHistory.setBackgroundResource(R.drawable.tab_inactive);
+        });
+
+        btnHistory.setOnClickListener(v -> {
+            gridRooms.setVisibility(View.GONE);
+            schedulespacer.setVisibility(View.GONE);
+            recyclerHistory.setVisibility(View.VISIBLE);
+            btnRoom.setBackgroundResource(R.drawable.tab_inactive);
+            btnHistory.setBackgroundResource(R.drawable.tab_active);
+        });
+
+        rbEveryday.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                selectedDate = "Everyday";
+                layoutDateSelector.setVisibility(GONE);
+                dateSpacer.setVisibility(VISIBLE);
+            }
+        });
+
+        rbOnce.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                dateSpacer.setVisibility(GONE);
+                layoutDateSelector.setVisibility(VISIBLE);
+            }
+        });
+    }
+
+    private void setupSwitchControls() {
+        // When user toggles switch -> update Firebase & history.
+        // Use isUpdating flag to avoid responding to our own programmatic setChecked() changes.
+        switchBedroom.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isUpdating) return;
+            lightingRoot.child("Bedroom").setValue(isChecked);
+            saveToHistory("Bedroom", isChecked);
+            tvStatusBedroom.setText(isChecked ? "ON 💡" : "OFF");
+        });
+        switchKitchen.setOnCheckedChangeListener((btn, isChecked) -> {
+            if (isUpdating) return;
+            lightingRoot.child("Kitchen").setValue(isChecked);
+            saveToHistory("Kitchen", isChecked);
+            tvStatusKitchen.setText(isChecked ? "ON 💡" : "OFF");
+        });
+        switchLiving.setOnCheckedChangeListener((btn, isChecked) -> {
+            if (isUpdating) return;
+            lightingRoot.child("Livingroom").setValue(isChecked);
+            saveToHistory("Livingroom", isChecked);
+            tvStatusLiving.setText(isChecked ? "ON 💡" : "OFF");
+        });
+        switchBathroom.setOnCheckedChangeListener((btn, isChecked) -> {
+            if (isUpdating) return;
+            lightingRoot.child("Bathroom").setValue(isChecked);
+            saveToHistory("Bathroom", isChecked);
+            tvStatusBathroom.setText(isChecked ? "ON 💡" : "OFF");
+        });
+    }
+
+    private void setupBottomSheetControls() {
+        // Bottom Sheet
+        View bottomSheet = findViewById(R.id.bottomSheet);
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setFitToContents(true);
+        bottomSheetBehavior.setPeekHeight(0);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        btnSchedule.setOnClickListener(v -> {
+            dimArea.setVisibility(VISIBLE);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            recyclerHistory.setZ(-10f);
+        });
+
+        dimArea.setOnClickListener(v -> closeBottomSheet());
+
+        btnAddSchedule.setOnClickListener(v -> {
+            scheduleListContainer.setVisibility(GONE);
+            addScheduleContainer.setVisibility(VISIBLE);
+            toolbar.setTitle("Add Schedule");
+        });
+    }
+
+    // ------------------------
+    // Firebase listeners & UI sync
+    // ------------------------
+    private void attachAllRoomListeners() {
+        // Generic attach to avoid repeating code
+        attachSwitchListener("Bedroom", switchBedroom, tvStatusBedroom);
+        attachSwitchListener("Kitchen", switchKitchen, tvStatusKitchen);
+        attachSwitchListener("Livingroom", switchLiving, tvStatusLiving);
+        attachSwitchListener("Bathroom", switchBathroom, tvStatusBathroom);
+    }
+
+    private void attachSwitchListener(String room, Switch switchView, TextView statusView) {
+        lightingRoot.child(room).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Boolean state = snapshot.getValue(Boolean.class);
+                isUpdating = true;
+                boolean checked = state != null && state;
+                switchView.setChecked(checked);
+                statusView.setText(checked ? "ON 💡" : "OFF");
+                isUpdating = false;
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // ignore for now
+            }
+        });
+    }
+
+    // ------------------------
+    // Schedule handling (loader + executor)
+    // ------------------------
+    private void loadScheduleData() {
+        scheduleRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                scheduleList.clear();
+                for (DataSnapshot ds : snapshot.getChildren()) {
+                    ScheduleItem item = ds.getValue(ScheduleItem.class);
+                    if (item != null) scheduleList.add(item);
+                }
+                scheduleAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(LightingActivity.this, "Failed to load schedule", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // This method checks schedules now and triggers Firebase updates if needed.
+    // Runs periodically while app is alive (see startSchedulerChecker()).
+    private void checkAndRunSchedulesNow() {
+        scheduleRef.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) return;
+
+            Calendar now = Calendar.getInstance();
+            SimpleDateFormat sdfTime = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+            String currentTime = sdfTime.format(now.getTime()); // "HH:mm"
+            String currentDate = sdfDate.format(now.getTime()); // "yyyy-MM-dd"
+
+            for (DataSnapshot ds : task.getResult().getChildren()) {
+                ScheduleItem item = ds.getValue(ScheduleItem.class);
+                if (item == null || !item.isActive()) continue;
+
+                boolean isToday = "Everyday".equals(item.getDate()) || currentDate.equals(item.getDate());
+
+                if (!isToday) continue;
+
+                // try ON
+                if (item.getOnTime() != null && item.getOnTime().equals(currentTime)) {
+                    String execKey = item.getKey() + "_ON";
+                    if (shouldExecute(execKey, now)) {
+                        // set Firebase value to true
+                        lightingRoot.child(item.getRoom()).setValue(true);
+                        saveToHistory(item.getRoom(), true);
+                        markExecuted(execKey, now);
+                    }
+                }
+                // try OFF
+                if (item.getOffTime() != null && item.getOffTime().equals(currentTime)) {
+                    String execKey = item.getKey() + "_OFF";
+                    if (shouldExecute(execKey, now)) {
+                        lightingRoot.child(item.getRoom()).setValue(false);
+                        saveToHistory(item.getRoom(), false);
+                        markExecuted(execKey, now);
+                    }
+                }
+            }
+        });
+    }
+
+    private boolean shouldExecute(String execKey, Calendar now) {
+        // prevent re-trigger within same minute
+        long minuteId = now.getTimeInMillis() / (60 * 1000L);
+        Long last = lastExecuted.get(execKey);
+        return last == null || last != minuteId;
+    }
+
+    private void markExecuted(String execKey, Calendar now) {
+        long minuteId = now.getTimeInMillis() / (60 * 1000L);
+        lastExecuted.put(execKey, minuteId);
+    }
+
+    private final Runnable schedulerRunnable = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                checkAndRunSchedulesNow();
+            } finally {
+                // schedule next run
+                schedulerHandler.postDelayed(this, SCHEDULER_INTERVAL_MS);
+            }
+        }
+    };
+
+    private void startSchedulerChecker() {
+        // start immediately
+        schedulerHandler.post(schedulerRunnable);
+    }
+
+    private void stopSchedulerChecker() {
+        schedulerHandler.removeCallbacks(schedulerRunnable);
+    }
+
+    // ------------------------
+    // History, timepickers, datepicker, add schedule
+    // ------------------------
     private void saveToHistory(String room, boolean isOn) {
         long timestamp = System.currentTimeMillis();
 
@@ -321,6 +434,7 @@ public class LightingActivity extends AppCompatActivity {
         );
         historyRef.push().setValue(item);
     }
+
     private void loadHistory() {
         historyRef.orderByChild("timestamp")
                 .addValueEventListener(new ValueEventListener() {
@@ -380,46 +494,26 @@ public class LightingActivity extends AppCompatActivity {
 
                         historyAdapter.notifyDataSetChanged();
                     }
+
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
-    private void closeBottomSheet() {
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        dimArea.setVisibility(GONE);
-        recyclerHistory.setZ(0f);
-    }
-    private void loadScheduleData() {
-        scheduleRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                scheduleList.clear();
-                for (DataSnapshot ds : snapshot.getChildren()) {
-                    ScheduleItem item = ds.getValue(ScheduleItem.class);
-                    if (item != null) scheduleList.add(item);
-                }
-                scheduleAdapter.notifyDataSetChanged();
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(LightingActivity.this, "Failed to load schedule", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
     private void addNewSchedule() {
         String onTime = etOnTime.getText().toString();
         String offTime = etOffTime.getText().toString();
 
-        if (selectedDate.isEmpty() || onTime.isEmpty() || offTime.isEmpty()) {
+        if ((selectedDate == null || selectedDate.isEmpty()) || onTime.isEmpty() || offTime.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
-        String selectedRoom = spinnerRoom.getSelectedItem().toString();
-        String key = selectedRoom + "_" + selectedDate.replace("-", "") + "_" + onTime + "_" + offTime;
+        String selectedRoomLocal = spinnerRoom.getSelectedItem().toString();
+        String key = selectedRoomLocal + "_" + selectedDate.replace("-", "") + "_" + onTime + "_" + offTime;
         ScheduleItem item = new ScheduleItem(
                 key,
                 "Lighting",
-                selectedRoom,
+                selectedRoomLocal,
                 selectedDate,
                 onTime,
                 offTime,
@@ -434,9 +528,12 @@ public class LightingActivity extends AppCompatActivity {
                         addScheduleContainer.setVisibility(GONE);
                         scheduleListContainer.setVisibility(VISIBLE);
                         toolbar.setTitle("Schedule");
+                    } else {
+                        Toast.makeText(this, "Failed to add schedule", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
     private void showTimePicker(TimeListener listener) {
         Calendar c = Calendar.getInstance();
         int hour = c.get(Calendar.HOUR_OF_DAY);
@@ -446,6 +543,7 @@ public class LightingActivity extends AppCompatActivity {
         );
         dialog.show();
     }
+
     private void pickDate() {
         Calendar calendar = Calendar.getInstance();
         DatePickerDialog dialog = new DatePickerDialog(
@@ -462,9 +560,20 @@ public class LightingActivity extends AppCompatActivity {
         );
         dialog.show();
     }
+
     interface TimeListener {
         void onTimeSelected(int hour, int minute);
     }
+
+    // ------------------------
+    // lifecycle
+    // ------------------------
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopSchedulerChecker();
+    }
+
     @Override
     public void onBackPressed() {
         if (addScheduleContainer.getVisibility() == VISIBLE) {
@@ -474,4 +583,14 @@ public class LightingActivity extends AppCompatActivity {
             closeBottomSheet();
         } else super.onBackPressed();
     }
+
+    private void closeBottomSheet() {
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        dimArea.setVisibility(GONE);
+        recyclerHistory.setZ(0f);
+    }
 }
+
+
+
+

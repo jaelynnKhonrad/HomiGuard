@@ -7,9 +7,10 @@ public class HistoryModel {
     private String device;
     private String deviceName;
     private String value;
-    private int percent;        // AMAN: default 0
-    private float levelCm;      // AMAN: default 0.0f
+    private int percent;
+    private float levelCm;
     private long timestamp;
+    private String date;  // ✅ TAMBAHKAN INI!
 
     // ✅ WAJIB untuk Firebase
     public HistoryModel() {}
@@ -65,6 +66,10 @@ public class HistoryModel {
         return timestamp;
     }
 
+    public String getDate() {  // ✅ TAMBAHKAN INI!
+        return date;
+    }
+
     // ===== SETTER (BIAR FIREBASE AMAN) =====
 
     public void setHeader(boolean header) {
@@ -97,5 +102,9 @@ public class HistoryModel {
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void setDate(String date) {  // ✅ TAMBAHKAN INI!
+        this.date = date;
     }
 }

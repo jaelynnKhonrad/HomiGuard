@@ -52,6 +52,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
         HistoryModel item = list.get(position);
 
+        // ✅ TAMBAHKAN LOG INI:
+        android.util.Log.d("HistoryAdapter", "Binding position " + position +
+                ", isHeader=" + item.isHeader() +
+                ", device=" + item.getDevice() +
+                ", value=" + item.getValue());
+
         if (holder instanceof HeaderHolder) {
             ((HeaderHolder) holder).tvHeader.setText(item.getHeaderTitle());
             return;
@@ -97,11 +103,11 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 break;
 
             case "lighting":
-                if (device != null && !device.isEmpty()) {
-                    String room = device.toLowerCase().trim(); // aman dari spasi & huruf kapital
+                if (deviceName != null && !deviceName.isEmpty()) {  // ✅ GANTI device → deviceName
+                    String room = deviceName.toLowerCase().trim();  // ✅ GANTI device → deviceName
 
                     if (room.contains("bedroom")) {
-                        ih.imgIcon.setImageResource(R.drawable.bedroom);
+                        ih.imgIcon.setImageResource(R.drawable.tank);
                     } else if (room.contains("livingroom")) {
                         ih.imgIcon.setImageResource(R.drawable.living);
                     } else if (room.contains("kitchen")) {
@@ -109,12 +115,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     } else if (room.contains("bathroom")) {
                         ih.imgIcon.setImageResource(R.drawable.toilet);
                     } else {
-                        ih.imgIcon.setImageResource(R.drawable.lighting); // default icon
+                        ih.imgIcon.setImageResource(R.drawable.lighting);
                     }
                 } else {
-                    // fallback jika device null atau kosong
                     ih.imgIcon.setImageResource(R.drawable.lighting);
                 }
+                break;  // ✅ TAMBAH break;
 
             case "water level":
                 ih.imgIcon.setImageResource(R.drawable.tank);

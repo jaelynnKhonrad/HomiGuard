@@ -1,6 +1,7 @@
 package edu.uph.m23si1.homiguard;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -32,16 +33,18 @@ import edu.uph.m23si1.homiguard.model.HistoryModel;
 
 public class LockActivity extends AppCompatActivity {
 
-    Switch switchLock;
-    TextView tvStatus;
-    Toolbar toolbar;
-    DatabaseReference lockRef, historyRef;
+    private Switch switchLock;
+    private TextView tvStatus;
+    private Toolbar toolbar;
 
-    RecyclerView recyclerHistory;
-    HistoryAdapter historyAdapter;
-    List<HistoryModel> historyList = new ArrayList<>();
+    private DatabaseReference lockRef, historyRef;
 
-    private boolean isUpdating = false; // 🔥 Supaya tidak trigger history 2x
+    private RecyclerView recyclerHistory;
+    private HistoryAdapter historyAdapter;
+    private List<HistoryModel> historyList = new ArrayList<>();
+
+    private boolean isUpdating = false;
+    private Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,71 +54,70 @@ public class LockActivity extends AppCompatActivity {
         switchLock = findViewById(R.id.switchLock);
         tvStatus = findViewById(R.id.tvStatus);
         recyclerHistory = findViewById(R.id.recyclerHistory);
+        toolbar = findViewById(R.id.toolbar);
+
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         recyclerHistory.setLayoutManager(new LinearLayoutManager(this));
         historyAdapter = new HistoryAdapter(historyList);
         recyclerHistory.setAdapter(historyAdapter);
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
 
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-
-        // Database reference
         lockRef = db.getReference("HomiGuard/Device/Lock");
         historyRef = db.getReference("HomiGuard/History/Lock");
 
-        // **Default locked saat activity dibuka**
-        lockRef.setValue(true);
-
         loadHistory();
 
-        // 🔹 Listener realtime Firebase
+        // Listen real-time status
         lockRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Boolean isLocked = snapshot.getValue(Boolean.class);
                 if (isLocked == null) return;
 
-                isUpdating = true;  // ⛔ supaya tidak trigger onCheckedChange
+                isUpdating = true;
 
-                switchLock.setChecked(isLocked);
-                tvStatus.setText(isLocked ? "Door Unlocked 🔓" : "Door Locked 🔒");
+                switchLock.setChecked(!isLocked); // ON = unlocked
+                tvStatus.setText(isLocked ? "Door Locked 🔒" : "Door Unlocked 🔓");
 
                 isUpdating = false;
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.w("LockActivity", "Failed to read lock status.", error.toException());
+                Log.e("LockActivity", "Failed to read lock state", error.toException());
             }
         });
 
-        // 🔹 Listener saat user toggle manual
+        // User toggle
         switchLock.setOnCheckedChangeListener((buttonView, isChecked) -> {
-
             if (isUpdating) return;
 
-            // ❗ User hanya boleh UNLOCK (switch ON = unlock)
             if (isChecked) {
-                lockRef.setValue(false); // false = unlocked
+                // User unlock
+                lockRef.setValue(false);
                 tvStatus.setText("Door Unlocked 🔓");
                 saveToHistory(false);
-            } else {
-                // ❌ Jangan biarkan user lock manual
-                Toast.makeText(this, "Door will auto-lock in a few seconds", Toast.LENGTH_SHORT).show();
 
-                // Kembalikan switch ke posisi locked
+                // Auto-lock in 3 seconds
+                handler.postDelayed(() -> {
+                    lockRef.setValue(true);
+                    saveToHistory(true);
+                }, 3000);
+
+            } else {
+                // User tries to lock manually
+                Toast.makeText(this, "Door auto-locks shortly", Toast.LENGTH_SHORT).show();
+
                 isUpdating = true;
                 switchLock.setChecked(true);
                 isUpdating = false;
             }
         });
-
     }
 
-    // 🔹 Save history
+    // Save history
     private void saveToHistory(boolean isLocked) {
-
         long timestamp = System.currentTimeMillis();
         String value = isLocked ? "Locked" : "Unlocked";
 
@@ -123,89 +125,138 @@ public class LockActivity extends AppCompatActivity {
                 .format(new Date(timestamp));
 
         DatabaseReference newEntry = historyRef.push();
-
         newEntry.child("device").setValue("Lock");
         newEntry.child("value").setValue(value);
         newEntry.child("date").setValue(date);
         newEntry.child("timestamp").setValue(timestamp)
-                .addOnSuccessListener(a -> Log.d("LockActivity", "History saved"))
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to save history", Toast.LENGTH_SHORT).show()
-                );
+                        Toast.makeText(this, "Failed to save history", Toast.LENGTH_SHORT).show());
     }
 
-    // 🔹 Load history
+    // Load history & group by date
     private void loadHistory() {
-        historyRef.orderByChild("timestamp").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
+        historyRef.orderByChild("timestamp")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
 
-                LinkedHashMap<String, ArrayList<HistoryModel>> grouped = new LinkedHashMap<>();
-                historyList.clear();
+                        LinkedHashMap<String, ArrayList<HistoryModel>> grouped = new LinkedHashMap<>();
+                        historyList.clear();
 
-                Calendar calNow = Calendar.getInstance();
-                Calendar calYesterday = Calendar.getInstance();
-                calYesterday.add(Calendar.DAY_OF_YEAR, -1);
+                        Calendar calNow = Calendar.getInstance();
+                        Calendar calYesterday = Calendar.getInstance();
+                        calYesterday.add(Calendar.DAY_OF_YEAR, -1);
 
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-                String todayStr = sdf.format(calNow.getTime());
-                String yesterdayStr = sdf.format(calYesterday.getTime());
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                        String todayStr = sdf.format(calNow.getTime());
+                        String yesterdayStr = sdf.format(calYesterday.getTime());
 
-                // ✅ AMBIL NAMA DEVICE DARI PATH FIREBASE (PASTI "Lock")
-                String pathDevice = historyRef.getKey(); // = "Lock"
+//                        for (DataSnapshot ds : snapshot.getChildren()) {
+//
+//                            HistoryModel item = ds.getValue(HistoryModel.class);
+//                            if (item == null) continue;
+//
+//                            // ✅ AMBIL TIMESTAMP AMAN (ANDROID + ARDUINO)
+//                            Object tsObj = ds.child("timestamp").getValue();
+//                            long ts = 0;
+//
+//                            if (tsObj instanceof Long) {
+//                                ts = (Long) tsObj;
+//                            } else if (tsObj instanceof String) {
+//                                try {
+//                                    ts = Long.parseLong((String) tsObj);
+//                                } catch (Exception ignored) {}
+//                            }
+//
+//                            // ✅ JIKA TIMESTAMP DARI ARDUINO (DETIK → MILIDETIK)
+//                            if (ts < 100000000000L) { // masih 10 digit
+//                                ts = ts * 1000;
+//                            }
+//
+//                            item.setTimestamp(ts);
+//
+//                            // ✅ PAKSA DEVICE JADI "Lock" JIKA KOSONG
+//                            if (item.getDevice() == null || item.getDevice().isEmpty()) {
+//                                item.setDevice("Lock");
+//                            }
+//
+//                            String itemDate = sdf.format(item.getTimestamp());
+//
+//                            grouped.putIfAbsent(itemDate, new ArrayList<>());
+//                            grouped.get(itemDate).add(item);
+//                        }
 
-                for (DataSnapshot ds : snapshot.getChildren()) {
+                        //new code
+                        for (DataSnapshot ds : snapshot.getChildren()) {
 
-                    HistoryModel item = ds.getValue(HistoryModel.class);
-                    if (item == null) continue;
+                            // ✅ AMBIL MANUAL (biar support semua struktur)
+                            HistoryModel item = new HistoryModel();
 
-                    // ✅ FALLBACK DEVICE (ANTI UNKNOWN)
-                    if (item.getDevice() == null || item.getDevice().isEmpty()) {
-                        item.setDevice(pathDevice); // otomatis jadi "Lock"
+                            item.setDevice(ds.child("device").getValue(String.class));
+                            item.setValue(ds.child("value").getValue(String.class));
+                            item.setDate(ds.child("date").getValue(String.class));
+
+                            // ✅ AMBIL TIMESTAMP AMAN (ANDROID + ARDUINO)
+                            Object tsObj = ds.child("timestamp").getValue();
+                            long ts = 0;
+
+                            if (tsObj instanceof Long) {
+                                ts = (Long) tsObj;
+                            } else if (tsObj instanceof String) {
+                                try {
+                                    ts = Long.parseLong((String) tsObj);
+                                } catch (Exception ignored) {}
+                            } else if (tsObj instanceof Integer) {
+                                ts = ((Integer) tsObj).longValue();
+                            }
+
+                            // ✅ JIKA TIMESTAMP DARI ARDUINO (DETIK → MILIDETIK)
+                            if (ts < 100000000000L) { // masih 10 digit
+                                ts = ts * 1000;
+                            }
+
+                            item.setTimestamp(ts);
+
+                            // ✅ PAKSA DEVICE JADI "Lock" JIKA KOSONG
+                            if (item.getDevice() == null || item.getDevice().isEmpty()) {
+                                item.setDevice("Lock");
+                            }
+
+                            // ✅ SKIP jika data kosong
+                            if (item.getValue() == null || item.getTimestamp() == 0) {
+                                continue;
+                            }
+
+                            String itemDate = sdf.format(item.getTimestamp());
+
+                            grouped.putIfAbsent(itemDate, new ArrayList<>());
+                            grouped.get(itemDate).add(item);
+                        }
+
+                        List<String> dates = new ArrayList<>(grouped.keySet());
+                        Collections.sort(dates, (d1, d2) -> d2.compareTo(d1));
+
+                        for (String date : dates) {
+
+                            String header =
+                                    date.equals(todayStr) ? "Today" :
+                                            date.equals(yesterdayStr) ? "Yesterday" : date;
+
+                            historyList.add(new HistoryModel(header));
+
+                            ArrayList<HistoryModel> items = grouped.get(date);
+                            Collections.reverse(items);
+                            historyList.addAll(items);
+                        }
+
+                        historyAdapter.notifyDataSetChanged();
                     }
 
-                    // ✅ FILTER DATA RUSAK
-                    if (item.getTimestamp() == 0 || item.getValue() == null) continue;
-
-                    String itemDate = sdf.format(new Date(item.getTimestamp()));
-
-                    if (!grouped.containsKey(itemDate)) {
-                        grouped.put(itemDate, new ArrayList<>());
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("LockActivity", "Failed to load history", error.toException());
                     }
-
-                    grouped.get(itemDate).add(item);
-                }
-
-                ArrayList<String> dates = new ArrayList<>(grouped.keySet());
-                Collections.reverse(dates);
-
-                for (String date : dates) {
-
-                    String header;
-                    if (date.equals(todayStr)) {
-                        header = "Today";
-                    } else if (date.equals(yesterdayStr)) {
-                        header = "Yesterday";
-                    } else {
-                        header = date;
-                    }
-
-                    historyList.add(new HistoryModel(header));
-
-                    ArrayList<HistoryModel> items = grouped.get(date);
-                    if (items != null) {
-                        Collections.reverse(items);
-                        historyList.addAll(items);
-                    }
-                }
-
-                historyAdapter.notifyDataSetChanged();
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("LockActivity", "Failed to load history", error.toException());
-            }
-        });
+                });
     }
+
 }
