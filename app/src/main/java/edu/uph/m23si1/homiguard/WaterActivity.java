@@ -130,28 +130,37 @@ public class WaterActivity extends AppCompatActivity {
                     return;
                 }
 
-                String currentHeader = "";
-                SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+                // ================================
+                // SETUP TODAY / YESTERDAY CHECK
+                // ================================
+                Calendar calNow = Calendar.getInstance();
+                Calendar calYesterday = Calendar.getInstance();
+                calYesterday.add(Calendar.DAY_OF_YEAR, -1);
+
+                SimpleDateFormat fullDateFormat =
+                        new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
+
+                SimpleDateFormat compareFormat =
+                        new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+                String todayStr = compareFormat.format(calNow.getTime());
+                String yesterdayStr = compareFormat.format(calYesterday.getTime());
+
+                // Grouping by date
+                LinkedHashMap<String, ArrayList<HistoryModel>> grouped = new LinkedHashMap<>();
 
                 for (DataSnapshot data : snapshot.getChildren()) {
                     try {
+                        // Timestamp safe parsing
                         Long ts = parseLong(data.child("timestamp").getValue());
                         if (ts == null) continue;
 
-                        // convert to ms
-                        if (ts < 100000000000L) ts *= 1000;
-
-                        String date = sdf.format(new Date(ts));
-
-                        // add date header
-                        if (!date.equals(currentHeader)) {
-                            currentHeader = date;
-                            list.add(new HistoryModel(currentHeader));
-                        }
+                        if (ts < 100000000000L) ts *= 1000; // convert seconds → ms
 
                         Double levelCm = parseDouble(data.child("levelCm").getValue());
                         Integer percent = parseInt(data.child("percent").getValue());
 
+                        // determine final value shown
                         String finalVal;
                         if (percent != null) {
                             finalVal = percent + " %";
@@ -161,17 +170,48 @@ public class WaterActivity extends AppCompatActivity {
                             finalVal = "-";
                         }
 
-                        list.add(new HistoryModel(
+                        HistoryModel item = new HistoryModel(
                                 "Water Level",
                                 finalVal,
                                 percent,
-                                levelCm != null ? levelCm.intValue() : null,
+                                levelCm != null ? levelCm.floatValue() : 0f,
                                 ts
-                        ));
+                        );
+
+                        // Convert timestamp → date key (yyyy-MM-dd)
+                        String keyDate = compareFormat.format(new Date(ts));
+
+                        grouped.putIfAbsent(keyDate, new ArrayList<>());
+                        grouped.get(keyDate).add(item);
 
                     } catch (Exception e) {
                         Log.e(TAG, "History parsing error", e);
                     }
+                }
+
+                // ================================
+                // BUILD FINAL LIST WITH HEADERS
+                // ================================
+                List<String> dates = new ArrayList<>(grouped.keySet());
+
+                // newest first
+                Collections.sort(dates, (d1, d2) -> d2.compareTo(d1));
+
+                for (String date : dates) {
+
+                    String headerName =
+                            date.equals(todayStr) ? "Today" :
+                                    date.equals(yesterdayStr) ? "Yesterday" :
+                                            fullDateFormat.format(compareFormat.parse(date, new java.text.ParsePosition(0)));
+
+                    list.add(new HistoryModel(headerName));
+
+                    ArrayList<HistoryModel> items = grouped.get(date);
+
+                    // newest at bottom (like messaging apps)
+                    Collections.reverse(items);
+
+                    list.addAll(items);
                 }
 
                 historyAdapter.notifyDataSetChanged();

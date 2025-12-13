@@ -142,11 +142,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b212cfda-e4af-40ea-a1ee-ae8301e4e1f1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/8.11.1/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/file-system.probe" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/file-system.probe" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LockActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/LockActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/WaterActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/WaterActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/HistoryAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/adapter/HistoryAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/model/HistoryModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/model/HistoryModel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/StatisticFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/ui/StatisticFragment.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_statistic.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_statistic.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,8 +201,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/jaelynnKhonrad/HomiGuard.git&quot;,
-    &quot;accountId&quot;: &quot;90846eaf-9c0c-434e-954a-f4702152ed27&quot;
+    &quot;url&quot;: &quot;git@github.com:jaelynnKhonrad/HomiGuard.git&quot;,
+    &quot;accountId&quot;: &quot;7d1b58f8-5ba8-47aa-bdfc-7fc9ec6fc38d&quot;
   }
 }</component>
   <component name="ProblemsViewState">
@@ -343,17 +347,33 @@
       </map>
     </option>
   </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/MainActivity.java</url>
+          <line>29</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/app/src/main/java/edu/uph/m23si1/homiguard/WaterActivity.java</url>
+          <line>119</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
   <component name="play_dynamic_filters_status">
     <option name="appIdToCheckInfo">
       <map>
         <entry key="edu.uph.m23si1.homiguard">
           <value>
-            <CheckInfo lastCheckTimestamp="1765263602856" />
+            <CheckInfo lastCheckTimestamp="1765532302628" />
           </value>
         </entry>
         <entry key="edu.uph.m23si1.homiguard.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1765263602887" />
+            <CheckInfo lastCheckTimestamp="1765532302648" />
           </value>
         </entry>
       </map>
